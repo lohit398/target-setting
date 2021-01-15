@@ -2,7 +2,7 @@ public class DE_SalesTargetContoller {
     @AuraEnabled(cacheable=true)
     public static List<User> getUsers(String recordId){
         String owner = [Select Id,OwnerId from Goal__c where Id =: recordId].OwnerId;
-        return [select Id,Name,UserRole.Name from User where ManagerId =: owner];
+        return [select Id,Name,UserRole.Name,Title from User where ManagerId =: owner];
     }
     
     @AuraEnabled
@@ -156,5 +156,16 @@ public class DE_SalesTargetContoller {
         }
         INSERT reporteesGoals;
         resultGoalIds.addAll(reporteesGoals);*/
+    
+    @AuraEnabled(cacheable=true)
+    public static List<String> getProductFamilies(){
+        List<Product2> products = [SELECT Family from Product2];
+        List<String> productFamilies = new List<String>();
+        for(Product2 product: products){
+            productFamilies.add(product.Family);
+        }
+        Set<String> familiesSet = new Set<String>(productFamilies);
+        return new List<String>(familiesSet);
+    }
 
 }
