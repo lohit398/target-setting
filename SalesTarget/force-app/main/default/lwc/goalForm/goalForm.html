@@ -1,0 +1,20 @@
+<template>
+
+    <lightning-card>
+        <div class="slds-m-around_medium">
+            <div class="slds-box">
+                <c-lwc-lookup lookup-label="User" object-api-name="user" icon-name="standard:user"
+                    onrecordselection={onUserSelection}></c-lwc-lookup>
+                <lightning-input type="number" name="input7" label="Target" value={amount}
+                    formatter="currency" step="0.01" onchange={handleChange}></lightning-input>
+
+            </div>
+            <div class="slds-box">
+              
+                <lightning-button variant="brand" label="Submit" title="Primary action" onclick={handleClick}
+                    class="slds-m-left_x-small"></lightning-button>
+
+            </div>
+        </div>
+    </lightning-card>
+</template>

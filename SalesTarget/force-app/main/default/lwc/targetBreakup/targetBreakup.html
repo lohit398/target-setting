@@ -1,0 +1,116 @@
+<template>
+    <div style="border:2px solid #f3f2f2; border-radius:5px;background:white">
+
+        <div class="slds-page-header">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media" style="display:flex;align-items:center;">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-opportunity" title="opportunity">
+                                <lightning-icon icon-name="standard:sales_cadence_target"></lightning-icon>
+                            </span>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span class="slds-page-header__title slds-truncate">Set Targets</span>
+                                    </h1>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <div class="slds-box" style="margin:10px">
+                <div class="sub-header">
+                    Target
+                </div>
+                <div class="demo-only demo-only--sizing slds-grid slds-wrap">
+                    <div class="slds-size_1-of-2">
+                        <div class="slds-box_x-small slds-text-align_center slds-m-around_x-small">
+                            <lightning-input label="Target" type="number" value={target} onchange={handleTargetChange}
+                                formatter="currency" step=".01" data-element="target"></lightning-input>
+                        </div>
+                    </div>
+                    <div class="slds-size_1-of-2">
+                        <div class="slds-box_x-small slds-text-align_center slds-m-around_x-small">
+                            <lightning-combobox name="goal period" label="Goal Period" value={value}
+                                placeholder="Select Goal Period" options={options} onchange={handleChange}>
+                            </lightning-combobox>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="slds-box" style="margin:10px">
+                <div class="sub-header">
+                    Teams Target breakdown
+                </div>
+                <div style="margin-top:10px;min-height:100px;display:flex;flex-direction:column;">
+                    <template if:true={hasreportees}>
+                        <div style="display:flex;flex-direction:column;width:100%;">
+                            <template for:each={users} for:item="user" for:index="index">
+                                <div key={user.Id} style="font-weight: bold;margin-bottom:10px;">
+                                    {user.Name} - {user.Title}
+                                    <lightning-input label={user.Name} data-userid={user.Id} formatter="currency"
+                                        variant="label-hidden" type="number" step=".01"
+                                        onchange={handleChangeUserTargets}>
+                                    </lightning-input>
+                                </div>
+                            </template>
+                        </div>
+                        <div class="slds-clearfix">
+                            <div class="slds-float_left">
+                                <lightning-input label="Adjustment" data-input="sum" formatter="currency" type="number"
+                                    step=".01" data-elementtype="adjustment"></lightning-input>
+                            </div>
+                            <template if:false={isParent}>
+                                <template if:false={isTargetsConfirmed}>
+                                    <div class="slds-float_right" style="margin-top:25px;">
+                                        <lightning-button variant="brand" label="Confirm Targets"
+                                            onclick={createChildGoals}></lightning-button>
+                                    </div>
+                                </template>
+                            </template>
+                        </div>
+                    </template>
+                    <template if:false={hasreportees}>
+                        <div
+                            style="display:flex;justify-content:center;align-items:center;font-size:16px;color:#3389ee;width:100%;height: 120px;font-weight: 600;">
+                            This is your Target , All the best 😀 !
+                        </div>
+                    </template>
+                </div>
+            </div>
+            <div class="slds-box" style="margin:10px">
+                <div class="sub-header">
+                    Quarter Level Targets
+                </div>
+                <div style="margin-top:10px;">
+                    <template for:each={targetGoalPeriod} for:item="goalPeriod" for:index="index">
+                        <lightning-input key={goalPeriod} label={goalPeriod} data-quarter={goalPeriod} type="number" disabled
+                            formatter="currency" step=".01" onchange={handleChangeInQuarterTargets}></lightning-input>
+                    </template>
+
+                </div>
+            </div>
+        </div>
+        <template if:true={isParent}>
+            <section class="slds-clearfix" style="padding:10px;">
+                <div class="slds-float--right">
+                    <p>
+                        <lightning-button label="Submit" variant="brand" onclick={createGoals}
+                            data-buttontype="parentTarget"></lightning-button>
+                    </p>
+                </div>
+            </section>
+        </template>
+    </div>
+
+</template>

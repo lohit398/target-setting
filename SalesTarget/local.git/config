@@ -1,0 +1,10 @@
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = true
+	ignorecase = true
+	precomposeunicode = true
+[remote "origin"]
+	url = https://github.com/lohit398/sales-target-setting.git
+	fetch = +refs/*:refs/*
+	mirror = true

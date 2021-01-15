@@ -1,0 +1,65 @@
+<template>
+    <div>
+        <div class="slds-page-header" style="margin-bottom:10px;">
+            <div class="slds-page-header__row">
+                <div class="slds-page-header__col-title">
+                    <div class="slds-media" style="display:flex;align-items:center;">
+                        <div class="slds-media__figure">
+                            <span class="slds-icon_container slds-icon-standard-opportunity">
+                                <lightning-icon icon-name="utility:target" style="background:#f3f2f2"></lightning-icon>
+                            </span>
+                        </div>
+                        <div class="slds-media__body">
+                            <div class="slds-page-header__name">
+                                <div class="slds-page-header__name-title">
+                                    <h1>
+                                        <span class="slds-page-header__title slds-truncate">Set Individual
+                                            Targets</span>
+                                    </h1>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div>
+            <template if:true={recordId}>
+                <div class="slds-box" style="padding:10px;">
+                    <lightning-record-edit-form object-api-name="Goal__c"
+                        onsuccess={handleSuccess} onsubmit={handleSubmit}>
+                        <lightning-messages></lightning-messages>
+                        <div class="slds-m-around_medium">
+                            <div class="slds-grid">
+                                <div class="slds-col slds-size_1-of-2">
+                                    <lightning-input-field field-name='Name'></lightning-input-field>
+                                    <lightning-input-field field-name='Goal_Period__c'></lightning-input-field>
+                                    <lightning-input-field field-name='Target_to_be_reached__c'></lightning-input-field>
+
+                                </div>
+                                <div class="slds-col slds-size_1-of-2">
+                                    <lightning-input-field field-name='Financial_Year__c'></lightning-input-field>
+                                    <lightning-input-field field-name='Target_Type__c'></lightning-input-field>
+                                    <lightning-input-field field-name='Parent_Goal__c' value={recordId}>
+                                    </lightning-input-field>
+                                </div>
+                              
+                            </div>
+                            <div>
+                                <c-lwc-lookup lookup-label="User" object-api-name="user" icon-name="standard:user"
+                                    onrecordselection={onUserSelection}></c-lwc-lookup>
+                            </div>
+                            <section class="slds-clearfix" style="padding:10px;">
+                                <div class="slds-float--right">
+                                    <lightning-button variant="brand" type="submit" name="save" label="Create Goal">
+                                    </lightning-button>
+                                </div>
+                            </section>
+                        </div>
+                    </lightning-record-edit-form>
+                </div>
+            </template>
+        </div>
+    </div>
+</template>
