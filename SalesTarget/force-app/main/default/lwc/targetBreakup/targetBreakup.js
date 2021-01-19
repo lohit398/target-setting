@@ -8,6 +8,7 @@ import { getResultsQuarter, validateTargets, setSum, fillData, disableFields } f
 import { ShowToastEvent } from 'lightning/platformShowToastEvent';
 import { updateRecord } from 'lightning/uiRecordApi';
 import ID_FIELD from '@salesforce/schema/Goal__c.Id';
+import NAME_FIELD from '@salesforce/schema/Goal__c.Name';
 import CONFIRM_TARGETS from '@salesforce/apex/DE_SalesTargetContoller.confirmTargets';
 import TARGET_TO_BE_REACHED from '@salesforce/schema/Goal__c.Target_to_be_reached__c';
 import INSERT_CHILD_GOALS from '@salesforce/apex/DE_SalesTargetContoller.insertChildGoals';
@@ -17,10 +18,14 @@ import PARENT_RECORD from '@salesforce/schema/Goal__c.Parent_Goal__c';
 import UPDATE_PARENT_GOALS from '@salesforce/apex/DE_SalesTargetContoller.updateParentGoals';
 import TARGET from '@salesforce/schema/Goal__c.Target_to_be_reached__c';
 import GET_CHILD_GOAL from '@salesforce/apex/DE_SalesTargetContoller.getChildGoals';
+import getProductFamilies from '@salesforce/apex/DE_SalesTargetContoller.getProductFamilies';
+import getAreas from '@salesforce/apex/DE_SalesTargetContoller.getAreas';
+import TARGET_TYPE from '@salesforce/schema/Goal__c.Target_Type__c';
+import { createRecord } from 'lightning/uiRecordApi';
+import Financial_Year__c from '@salesforce/schema/Goal__c.Financial_Year__c';
 
 
-
-const fields = [PARENT_RECORD, TARGET];
+const fields = [PARENT_RECORD, TARGET, Financial_Year__c];
 
 
 export default class TargetBreakup extends LightningElement {
@@ -41,24 +46,29 @@ export default class TargetBreakup extends LightningElement {
     isTargetsConfirmed = false;
     presetTargets = {};
     defaultRecordType;
+    productFamilies = [];
+    targetsForFamilies = [];
+    areas = [];
+    targetForAreas = [];
+    finacialYear;
 
 
     // Wire methods
     @wire(getObjectInfo, { objectApiName: GOAL__OBJ })
-    getRecordTypes({error,data}){
-        if(data){
+    getRecordTypes({ error, data }) {
+        if (data) {
             let recordtypeinfo = data.recordTypeInfos;
-            for(let i=0;i< Object.values(recordtypeinfo).length; i++){
-                if(Object.values(recordtypeinfo)[i].name === 'Goal Default Record Type'){
+            for (let i = 0; i < Object.values(recordtypeinfo).length; i++) {
+                if (Object.values(recordtypeinfo)[i].name === 'Goal Default Record Type') {
                     this.defaultRecordType = Object.keys(recordtypeinfo)[i];
                     console.log(this.defaultRecordType);
                 }
             }
         }
-        else{
+        else {
             console.log(error);
         }
-       
+
     }
 
 
@@ -87,10 +97,29 @@ export default class TargetBreakup extends LightningElement {
     wireRecordData({ error, data }) {
         if (data) {
             this.isParent = data.fields.Parent_Goal__c.value === null ? true : false;
+            this.finacialYear = data.fields.Financial_Year__c.value;
         }
         else if (error) {
             console.log(error);
         }
+    }
+
+    @wire(getProductFamilies)
+    getProductFamilies({ error, data }) {
+        if (error) {
+            console.log(error);
+        } else if (data) {
+            this.productFamilies = data;
+            console.log(data);
+        }
+    }
+
+    @wire(getAreas)
+    getAreasDetails({ error, data }) {
+        if (error)
+            console.log(error);
+        else if (data)
+            this.areas = data;
     }
 
 
@@ -246,6 +275,107 @@ export default class TargetBreakup extends LightningElement {
             mode: 'dismissable'
         });
         this.dispatchEvent(evt);
+    }
+    /*product family targets are created and taken based on */
+    handleProductTargetsCreation() {
+        this.targetsForFamilies = this.targetsForFamilies.filter(item => {
+            return item.target != 0;
+        })
+        
+        let createPromises = this.targetsForFamilies.map(item => {
+            let fields = {};
+            fields[NAME_FIELD.fieldApiName] = 'Product Target - ' + item.family;
+            fields[TARGET_TO_BE_REACHED.fieldApiName] = parseFloat(item.target);
+            fields[TARGET_TYPE.fieldApiName] = 'Revenue';
+            fields[Financial_Year__c.fieldApiName] = this.finacialYear;
+            fields[PARENT_RECORD.fieldApiName] = this.recordId;
+            const recordInput = { apiName: GOAL__OBJ.objectApiName, fields };
+            return createRecord(recordInput);
+        })
+        Promise.all(createPromises)
+            .then(values => {
+                this.template.querySelectorAll("[data-fieldtype='productfamily']").forEach(element => {
+                    element.disabled = true;
+                });
+            })
+            .catch(error => {
+                console.log(error);
+            })
+    }
+
+    /*tracks changes in product family percentages*/
+    handleChangeFamily(event) {
+        let family = event.target.dataset.productfamily;
+        let found = 0;
+
+        this.targetsForFamilies = this.targetsForFamilies.map(item => {
+            if (item.family === family) {
+                found = 1;
+                let obj = {};
+                obj.family = family;
+                obj.target = (parseInt(event.target.value / 100)) * this.target;
+                return obj;
+            }
+            else
+                return item;
+        })
+
+        if (found === 0) {
+            let new_obj = {};
+            new_obj.family = family;
+            new_obj.target = (parseInt(event.target.value) / 100) * this.target;
+            this.targetsForFamilies.push(new_obj);
+        }
+    }
+
+    handleAreaTargetChange(event) {
+        let area = event.target.dataset.areaname;
+        let found = 0;
+        this.targetForAreas = this.targetForAreas.map(item => {
+            if (item.area === area) {
+                found = 1;
+                let obj = {};
+                obj.area = area;
+                obj.target = (parseInt(event.target.value / 100)) * this.target;
+                return obj;
+            }
+            else
+                return item;
+        })
+
+        if (found === 0) {
+            let new_obj = {};
+            new_obj.area = area;
+            new_obj.target = (parseInt(event.target.value) / 100) * this.target;
+            this.targetForAreas.push(new_obj);
+        }
+    }
+
+    handleAreaTargetCreation() {
+        this.targetForAreas = this.targetForAreas.filter(item => {
+            return item.target != 0;
+        })
+        //console.log(this.targetForAreas);
+        let createPromises = this.targetForAreas.map(item => {
+            let fields = {};
+            fields[NAME_FIELD.fieldApiName] = 'Area Target - ' + item.area;
+            fields[TARGET_TO_BE_REACHED.fieldApiName] = parseFloat(item.target);
+            fields[TARGET_TYPE.fieldApiName] = 'Revenue';
+            fields[Financial_Year__c.fieldApiName] = this.finacialYear;
+            fields[PARENT_RECORD.fieldApiName] = this.recordId;
+            const recordInput = { apiName: GOAL__OBJ.objectApiName, fields };
+            return createRecord(recordInput);
+        })
+        Promise.all(createPromises)
+            .then(values => {
+                this.template.querySelectorAll("[data-fieldtype='area']").forEach(element => {
+                    element.disabled = true;
+                });
+            })
+            .catch(error => {
+                console.log(error);
+            })
+
     }
 
 

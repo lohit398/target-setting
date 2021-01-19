@@ -32,7 +32,7 @@
                 <div class="demo-only demo-only--sizing slds-grid slds-wrap">
                     <div class="slds-size_1-of-2">
                         <div class="slds-box_x-small slds-text-align_center slds-m-around_x-small">
-                            <lightning-input label="Target" type="number" value={target} onchange={handleTargetChange}
+                            <lightning-input label="Target" type="number" value={target} onblur={handleTargetChange}
                                 formatter="currency" step=".01" data-element="target"></lightning-input>
                         </div>
                     </div>
@@ -88,14 +88,54 @@
                     </template>
                 </div>
             </div>
+            <template if:true={isParent}>
+                <div class="slds-box" style="margin:10px;min-height:520px;">
+                    <div class="sub-header">
+                        Product Family Targets
+                    </div>
+                    <div style="margin-top:10px;">
+                        <template for:each={productFamilies} for:item="family" for:index="index">
+                            <lightning-input key={family} data-productfamily={family} data-fieldtype='productfamily' onblur={handleChangeFamily}
+                                label={family} type="number">
+                            </lightning-input>
+                        </template>
+                    </div>
+                    <div class="slds-float--right" style="margin:15px;">
+                        <lightning-button variant="brand" label="Confirm Targets"
+                            onclick={handleProductTargetsCreation}>
+                        </lightning-button>
+                    </div>
+                </div>
+            </template>
+            <template if:true={isParent}>
+                <div class="slds-box" style="margin:10px;min-height: 360px;">
+                    <div class="sub-header">
+                       Areawise Targets
+                    </div>
+                    <div style="margin-top:10px;">
+                        <template for:each={areas} for:item="area" for:index="index">
+                            <lightning-input key={area} data-fieldtype='area' data-areaname={area} onblur={handleAreaTargetChange}
+                                label={area} type="number">
+                            </lightning-input>
+                        </template>
+                    </div>
+                    <div class="slds-float--right" style="margin:15px;">
+                        <lightning-button variant="brand" label="Confirm Targets"
+                            onclick={handleAreaTargetCreation}>
+                        </lightning-button>
+                    </div>
+                </div>
+
+            </template>
             <div class="slds-box" style="margin:10px">
                 <div class="sub-header">
                     Quarter Level Targets
                 </div>
                 <div style="margin-top:10px;">
                     <template for:each={targetGoalPeriod} for:item="goalPeriod" for:index="index">
-                        <lightning-input key={goalPeriod} label={goalPeriod} data-quarter={goalPeriod} type="number" disabled
-                            formatter="currency" step=".01" onchange={handleChangeInQuarterTargets}></lightning-input>
+                        <lightning-input key={goalPeriod} label={goalPeriod} data-quarter={goalPeriod} type="number"
+                            disabled formatter="currency" step=".01" onchange={handleChangeInQuarterTargets}>
+                        </lightning-input>
                     </template>
 
                 </div>
