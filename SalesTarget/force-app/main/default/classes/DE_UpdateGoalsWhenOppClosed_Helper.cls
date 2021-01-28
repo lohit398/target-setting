@@ -11,8 +11,8 @@ public class DE_UpdateGoalsWhenOppClosed_Helper {
             //System.debug('field name is ' + goalId);
             goalIds.add(goalId);
         }
-        
-       List<Quarter__c> quarters = [Select Goal_Name__c,Name,Target_Achieved__c from Quarter__c where Goal_Name__c IN :goalIds AND Start_Date__c < :system.today() AND End_Date__c > :system.today()];
+       Opportunity opp = [SELECT Id,CloseDate from Opportunity where Id= :oppIds[0]];
+       List<Quarter__c> quarters = [Select Goal_Name__c,Name,Target_Achieved__c from Quarter__c where Goal_Name__c IN :goalIds AND Start_Date__c < :opp.CloseDate AND End_Date__c > :opp.CloseDate];
         for(Quarter__c q: quarters){
             goals.put(q.Goal_Name__c,q);
         }

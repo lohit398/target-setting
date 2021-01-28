@@ -23,10 +23,10 @@ public class DE_SalesTargetContoller {
         for(Integer i=0;i<users.size();i++){
             for(Integer j=0;j<insertedGoals.size();j++){
                 if(users[i].Id == insertedGoals[j].OwnerId){
-                     goalMap.put(insertedGoals[j].Id,users[i].ManagerId);
-                	//system.debug(insertedGoals[i].Id+'goal =====> manager'+users[i].ManagerId);
+                    goalMap.put(insertedGoals[j].Id,users[i].ManagerId);
+                    //system.debug(insertedGoals[i].Id+'goal =====> manager'+users[i].ManagerId);
                 }
-                   
+                
             }
         }
         
@@ -53,7 +53,7 @@ public class DE_SalesTargetContoller {
         List<Goal__c> goals = new List<Goal__c>();
         
         
-       
+        
         String prefixName = 'Target';
         
         for(Integer i=0;i< users.size();i++){
@@ -70,7 +70,7 @@ public class DE_SalesTargetContoller {
         }
         INSERT goals;
         resultGoalIds.addAll(goals);
-                
+        
         return resultGoalIds;
     }
     
@@ -84,11 +84,11 @@ public class DE_SalesTargetContoller {
     @AuraEnabled(cacheable=true)
     public static List<Opportunity> getOpps(String recordId){
         Goal__c goal = [SELECT Id,OwnerId,Start_Date__c,End_Date__c from Goal__c where Id=: recordId];
-		List<User> users = [SELECT Id,Name,ManagerId from User where Id = :goal.OwnerId];
+        List<User> users = [SELECT Id,Name,ManagerId from User where Id = :goal.OwnerId];
         for(Integer i=0;i<users.size();i++){
             List<User> reportees = [Select Id,Name,ManagerId from User where ManagerId =: users[i].Id];
             if(!reportees.isEmpty())
-            	users.addAll(reportees);
+                users.addAll(reportees);
         }
         
         return [SELECT Id,Name,CloseDate,StageName,Amount,Account.Name from Opportunity where OwnerId IN :users and StageName !='Closed Won' and StageName !='Closed Lost' and CloseDate > :goal.Start_Date__c and CloseDate < :goal.End_Date__c];
@@ -96,12 +96,12 @@ public class DE_SalesTargetContoller {
     
     @AuraEnabled(cacheable=true)
     public static List<Opportunity> getClosedOpps(String recordId){
-         Goal__c goal = [SELECT Id,OwnerId,Start_Date__c,End_Date__c from Goal__c where Id=: recordId];
-		List<User> users = [SELECT Id,Name,ManagerId from User where Id = :goal.OwnerId];
+        Goal__c goal = [SELECT Id,OwnerId,Start_Date__c,End_Date__c from Goal__c where Id=: recordId];
+        List<User> users = [SELECT Id,Name,ManagerId from User where Id = :goal.OwnerId];
         for(Integer i=0;i<users.size();i++){
             List<User> reportees = [Select Id,Name,ManagerId from User where ManagerId =: users[i].Id];
             if(!reportees.isEmpty())
-            	users.addAll(reportees);
+                users.addAll(reportees);
         }
         
         return [SELECT Id,Name,CloseDate,StageName,Amount,Account.Name from Opportunity where OwnerId IN :users and StageName ='Closed Won' and CloseDate > :goal.Start_Date__c and CloseDate < :goal.End_Date__c];
@@ -124,38 +124,18 @@ public class DE_SalesTargetContoller {
     
     @AuraEnabled(cacheable=true)
     public static List<Goal__c> getChildGoals(String recordId){
-        return [SELECT Id,OwnerId,Target_to_be_reached__c from Goal__c where Parent_Goal__c =: recordId ];
+        return [SELECT Id,OwnerId,Target_to_be_reached__c from Goal__c where Parent_Goal__c =: recordId AND Type__c = null];
     }
     
-    /* - with no confirm targets for team's breakup
-     List<Goal__c> reporteesGoals = new List<Goal__c>();
-        
-        
-        for(Integer j=0;j<users.size();j++){
-            
-            List<User> reportees = [Select Id,Name from User where ManagerId =: users[j]];
-            List<Double> reporteesTargets = new List<Double>();
-            Double reporteeTarget = 0;
-            if(!reportees.isEmpty()){
-                reporteeTarget  = targets[j]/reportees.size();
-            }
-            for(Integer k=0;k<reportees.size();k++){
-                users.add(reportees[k].Id);
-                targets.add(reporteeTarget);
-                Goal__c goal = new Goal__c();
-                goal.Name = parentGoal.Name + '- ' +reportees[k].Name;
-                goal.Goal_Period__c = parentGoal.Goal_Period__c;
-                goal.Parent_Goal__c = parentGoalId;
-                goal.Target_to_be_reached__c = reporteeTarget;
-                goal.Financial_Year__c = parentGoal.Financial_Year__c;
-                goal.Target_Type__c = parentGoal.Target_Type__c;
-                goal.OwnerId = reportees[k].Id;
-                goal.RecordTypeId = parentGoal.RecordTypeId;
-                reporteesGoals.add(goal);
-            }
-        }
-        INSERT reporteesGoals;
-        resultGoalIds.addAll(reporteesGoals);*/
+    @AuraEnabled(cacheable=true)
+    public static List<Goal__c> getAreaChildGoals(String recordId){
+        return [SELECT Id,Name,OwnerId,Target_to_be_reached__c from Goal__c where Parent_Goal__c =: recordId AND Type__c = 'Area'];
+    }
+    
+    @AuraEnabled(cacheable=true)
+    public static List<Goal__c> getProductFamilyChildGoals(String recordId){
+        return [SELECT Id,Name,OwnerId,Target_to_be_reached__c from Goal__c where Parent_Goal__c =: recordId AND Type__c = 'Product Family'];
+    }
     
     @AuraEnabled(cacheable=true)
     public static List<String> getProductFamilies(){
@@ -167,5 +147,14 @@ public class DE_SalesTargetContoller {
         Set<String> familiesSet = new Set<String>(productFamilies);
         return new List<String>(familiesSet);
     }
-
+    
+    @AuraEnabled(cacheable=true)
+    public static List<String> getAreas(){
+        List<String> areas = new List<String>();
+        for(Area__c area: [SELECT Name from Area__c]){
+            areas.add(area.Name); 
+        }
+        return areas;
+    }
+    
 }

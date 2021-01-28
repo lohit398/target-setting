@@ -23,6 +23,10 @@ import getAreas from '@salesforce/apex/DE_SalesTargetContoller.getAreas';
 import TARGET_TYPE from '@salesforce/schema/Goal__c.Target_Type__c';
 import { createRecord } from 'lightning/uiRecordApi';
 import Financial_Year__c from '@salesforce/schema/Goal__c.Financial_Year__c';
+import Type__c from '@salesforce/schema/Goal__c.Type__c';
+import getProductFamilyChildGoals from '@salesforce/apex/DE_SalesTargetContoller.getProductFamilyChildGoals';
+import getAreaChildGoals from '@salesforce/apex/DE_SalesTargetContoller.getAreaChildGoals';
+import Family_Area_Name__c from '@salesforce/schema/Goal__c.Family_Area_Name__c';
 
 
 const fields = [PARENT_RECORD, TARGET, Financial_Year__c];
@@ -51,6 +55,8 @@ export default class TargetBreakup extends LightningElement {
     areas = [];
     targetForAreas = [];
     finacialYear;
+    presetAreaTargets = {};
+    presetFamilyTargets = {};
 
 
     // Wire methods
@@ -61,7 +67,7 @@ export default class TargetBreakup extends LightningElement {
             for (let i = 0; i < Object.values(recordtypeinfo).length; i++) {
                 if (Object.values(recordtypeinfo)[i].name === 'Goal Default Record Type') {
                     this.defaultRecordType = Object.keys(recordtypeinfo)[i];
-                    console.log(this.defaultRecordType);
+                    //console.log(this.defaultRecordType);
                 }
             }
         }
@@ -110,7 +116,7 @@ export default class TargetBreakup extends LightningElement {
             console.log(error);
         } else if (data) {
             this.productFamilies = data;
-            console.log(data);
+            //console.log(data);
         }
     }
 
@@ -149,6 +155,19 @@ export default class TargetBreakup extends LightningElement {
                             this.handleTargetChange();
                     }).catch(error => {
                         console.log(error);
+                    })
+
+                getAreaChildGoals({ recordId: this.recordId })
+                    .then(response => {
+                        JSON.parse(JSON.stringify(response)).map(item => {
+                            this.template.querySelector('[data-areaname="' + item.Name.split('-')[1].trim() + '"]').value = item.Target_to_be_reached__c;
+                        })
+                    })
+                getProductFamilyChildGoals({ recordId: this.recordId })
+                    .then(response => {
+                        JSON.parse(JSON.stringify(response)).map(item => {
+                            this.template.querySelector('[data-productfamily="' + item.Name.split('-')[1].trim() + '"]').value = item.Target_to_be_reached__c;
+                        })
                     })
 
             })
@@ -281,7 +300,7 @@ export default class TargetBreakup extends LightningElement {
         this.targetsForFamilies = this.targetsForFamilies.filter(item => {
             return item.target != 0;
         })
-        
+
         let createPromises = this.targetsForFamilies.map(item => {
             let fields = {};
             fields[NAME_FIELD.fieldApiName] = 'Product Target - ' + item.family;
@@ -289,6 +308,8 @@ export default class TargetBreakup extends LightningElement {
             fields[TARGET_TYPE.fieldApiName] = 'Revenue';
             fields[Financial_Year__c.fieldApiName] = this.finacialYear;
             fields[PARENT_RECORD.fieldApiName] = this.recordId;
+            fields[Type__c.fieldApiName] = 'Product Family';
+            fields[Family_Area_Name__c.fieldApiName] = item.family;
             const recordInput = { apiName: GOAL__OBJ.objectApiName, fields };
             return createRecord(recordInput);
         })
@@ -297,6 +318,7 @@ export default class TargetBreakup extends LightningElement {
                 this.template.querySelectorAll("[data-fieldtype='productfamily']").forEach(element => {
                     element.disabled = true;
                 });
+                this.template.querySelector('[data-buttontype="product_family"]').disabled = true;
             })
             .catch(error => {
                 console.log(error);
@@ -363,6 +385,8 @@ export default class TargetBreakup extends LightningElement {
             fields[TARGET_TYPE.fieldApiName] = 'Revenue';
             fields[Financial_Year__c.fieldApiName] = this.finacialYear;
             fields[PARENT_RECORD.fieldApiName] = this.recordId;
+            fields[Type__c.fieldApiName] = 'Area';
+            fields[Family_Area_Name__c.fieldApiName] = item.area;
             const recordInput = { apiName: GOAL__OBJ.objectApiName, fields };
             return createRecord(recordInput);
         })
@@ -371,6 +395,7 @@ export default class TargetBreakup extends LightningElement {
                 this.template.querySelectorAll("[data-fieldtype='area']").forEach(element => {
                     element.disabled = true;
                 });
+                this.template.querySelector('[data-buttontype="area_targets"]').disabled = true;
             })
             .catch(error => {
                 console.log(error);
