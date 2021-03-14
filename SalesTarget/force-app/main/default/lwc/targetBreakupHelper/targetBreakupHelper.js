@@ -101,16 +101,16 @@ function fillData(self) {
         let obj = {};
         obj.userId = item.Id;
         obj.target = userTarget;
-
-        if (!self.isTargetsConfirmed)
-            self.template.querySelector('[data-userid="' + item.Id + '"]').value = userTarget;
-        else {
-            console.log(self.presetTargets);
-            console.log(item.Id);
-            obj.target = self.presetTargets[item.Id];
-            self.template.querySelector('[data-userid="' + item.Id + '"]').value = obj.target;
+        if (!self.isCategoryTarget) {
+            if (!self.isTargetsConfirmed)
+                self.template.querySelector('[data-userid="' + item.Id + '"]').value = userTarget;
+            else {
+                console.log(self.presetTargets);
+                console.log(item.Id);
+                obj.target = self.presetTargets[item.Id];
+                self.template.querySelector('[data-userid="' + item.Id + '"]').value = obj.target;
+            }
         }
-
 
         return obj;
     })

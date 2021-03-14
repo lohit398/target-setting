@@ -47,82 +47,87 @@
                 </div>
 
             </div>
-
-            <div class="slds-box" style="margin:10px">
-                <div class="sub-header">
-                    Teams Target breakdown
-                </div>
-                <div style="margin-top:10px;min-height:100px;display:flex;flex-direction:column;">
-                    <template if:true={hasreportees}>
-                        <div style="display:flex;flex-direction:column;width:100%;">
-                            <template for:each={users} for:item="user" for:index="index">
-                                <div key={user.Id} style="font-weight: bold;margin-bottom:10px;">
-                                    {user.Name} - {user.Title}
-                                    <lightning-input label={user.Name} data-userid={user.Id} formatter="currency"
-                                        variant="label-hidden" type="number" step=".01"
-                                        onchange={handleChangeUserTargets}>
-                                    </lightning-input>
-                                </div>
-                            </template>
-                        </div>
-                        <div class="slds-clearfix">
-                            <div class="slds-float_left">
-                                <lightning-input label="Adjustment" data-input="sum" formatter="currency" type="number"
-                                    step=".01" data-elementtype="adjustment"></lightning-input>
-                            </div>
-                            <template if:false={isParent}>
-                                <template if:false={isTargetsConfirmed}>
-                                    <div class="slds-float_right" style="margin-top:25px;">
-                                        <lightning-button variant="brand" label="Confirm Targets"
-                                            onclick={createChildGoals}></lightning-button>
+            <template if:false={isCategoryTarget}>
+                <div class="slds-box" style="margin:10px">
+                    <div class="sub-header">
+                        Teams Target breakdown
+                    </div>
+                    <div style="margin-top:10px;min-height:100px;display:flex;flex-direction:column;">
+                        <template if:true={hasreportees}>
+                            <div style="display:flex;flex-direction:column;width:100%;">
+                                <template for:each={users} for:item="user" for:index="index">
+                                    <div key={user.Id} style="font-weight: bold;margin-bottom:10px;">
+                                        {user.Name} - {user.Title}
+                                        <lightning-input label={user.Name} data-userid={user.Id} formatter="currency"
+                                            variant="label-hidden" type="number" step=".01"
+                                            onchange={handleChangeUserTargets}>
+                                        </lightning-input>
                                     </div>
                                 </template>
-                            </template>
-                        </div>
-                    </template>
-                    <template if:false={hasreportees}>
-                        <div
-                            style="display:flex;justify-content:center;align-items:center;font-size:16px;color:#3389ee;width:100%;height: 120px;font-weight: 600;">
-                            This is your Target , All the best 😀 !
-                        </div>
-                    </template>
+                            </div>
+                            <div class="slds-clearfix">
+                                <div class="slds-float_left">
+                                    <lightning-input label="Adjustment" data-input="sum" formatter="currency"
+                                        type="number" step=".01" data-elementtype="adjustment"></lightning-input>
+                                </div>
+                                <template if:false={isParent}>
+                                    <template if:false={isTargetsConfirmed}>
+                                        <div class="slds-float_right" style="margin-top:25px;">
+                                            <lightning-button variant="brand" label="Confirm Targets"
+                                                onclick={createChildGoals}></lightning-button>
+                                        </div>
+                                    </template>
+                                </template>
+                            </div>
+                        </template>
+                        <template if:false={hasreportees}>
+                            <div
+                                style="display:flex;justify-content:center;align-items:center;font-size:16px;color:#3389ee;width:100%;height: 120px;font-weight: 600;">
+                                This is your Target , All the best 😀 !
+                            </div>
+                        </template>
+                    </div>
                 </div>
-            </div>
+            </template>
             <template if:true={isParent}>
-                <div class="slds-box" style="margin:10px;min-height:520px;">
+                <div class="slds-box" style="margin:10px;">
                     <div class="sub-header">
                         Product Family Targets
                     </div>
                     <div style="margin-top:10px;">
                         <template for:each={productFamilies} for:item="family" for:index="index">
-                            <lightning-input key={family} data-productfamily={family} data-fieldtype='productfamily' onblur={handleChangeFamily}
-                                label={family} type="number">
+                            <lightning-input key={family} data-productfamily={family} data-fieldtype='productfamily'
+                                onchange={handleChangeFamily} label={family} type="number">
                             </lightning-input>
                         </template>
                     </div>
-                    <div class="slds-float--right" style="margin:15px;">
-                        <lightning-button variant="brand" label="Confirm Targets" data-buttontype="product_family"
-                            onclick={handleProductTargetsCreation}>
-                        </lightning-button>
+                    <div class="slds-clearfix" style="margin:10px;">
+                        <div class="slds-float--right">
+                            <lightning-button variant="brand" label="Confirm Targets" data-buttontype="product_family"
+                                onclick={handleProductTargetsCreation}>
+                            </lightning-button>
+                        </div>
                     </div>
                 </div>
             </template>
             <template if:true={isParent}>
-                <div class="slds-box" style="margin:10px;min-height: 360px;">
+                <div class="slds-box" style="margin:10px;">
                     <div class="sub-header">
-                       Areawise Targets
+                        Areawise Targets
                     </div>
                     <div style="margin-top:10px;">
                         <template for:each={areas} for:item="area" for:index="index">
-                            <lightning-input key={area} data-fieldtype='area' data-areaname={area} onblur={handleAreaTargetChange}
-                                label={area} type="number">
+                            <lightning-input key={area} data-fieldtype='area' data-areaname={area}
+                                onchange={handleAreaTargetChange} label={area} type="number">
                             </lightning-input>
                         </template>
                     </div>
-                    <div class="slds-float--right" style="margin:15px;">
-                        <lightning-button variant="brand" label="Confirm Targets"
-                            onclick={handleAreaTargetCreation} data-buttontype="area_targets">
-                        </lightning-button>
+                    <div class="slds-clearfix" style="margin:10px;">
+                        <div class="slds-float--right">
+                            <lightning-button variant="brand" label="Confirm Targets" onclick={handleAreaTargetCreation}
+                                data-buttontype="area_targets">
+                            </lightning-button>
+                        </div>
                     </div>
                 </div>
 

@@ -29,7 +29,7 @@ import getAreaChildGoals from '@salesforce/apex/DE_SalesTargetContoller.getAreaC
 import Family_Area_Name__c from '@salesforce/schema/Goal__c.Family_Area_Name__c';
 
 
-const fields = [PARENT_RECORD, TARGET, Financial_Year__c];
+const fields = [PARENT_RECORD, TARGET, Financial_Year__c, NAME_FIELD];
 
 
 export default class TargetBreakup extends LightningElement {
@@ -46,6 +46,7 @@ export default class TargetBreakup extends LightningElement {
     quarterTargets = [];
     isInitialized = true;
     isParent;
+    isCategoryTarget = false;
     hasreportees;
     isTargetsConfirmed = false;
     presetTargets = {};
@@ -104,6 +105,7 @@ export default class TargetBreakup extends LightningElement {
         if (data) {
             this.isParent = data.fields.Parent_Goal__c.value === null ? true : false;
             this.finacialYear = data.fields.Financial_Year__c.value;
+            this.isCategoryTarget = data.fields.Name.value.includes('Area Target -') || data.fields.Name.value.includes('Product Target -') === true ? true : false;
         }
         else if (error) {
             console.log(error);
@@ -156,19 +158,20 @@ export default class TargetBreakup extends LightningElement {
                     }).catch(error => {
                         console.log(error);
                     })
-
-                getAreaChildGoals({ recordId: this.recordId })
-                    .then(response => {
-                        JSON.parse(JSON.stringify(response)).map(item => {
-                            this.template.querySelector('[data-areaname="' + item.Name.split('-')[1].trim() + '"]').value = item.Target_to_be_reached__c;
+                if (!this.isCategoryTarget)
+                    getAreaChildGoals({ recordId: this.recordId })
+                        .then(response => {
+                            JSON.parse(JSON.stringify(response)).map(item => {
+                                this.template.querySelector('[data-areaname="' + item.Name.split('-')[1].trim() + '"]').value = item.Target_to_be_reached__c;
+                            })
                         })
-                    })
-                getProductFamilyChildGoals({ recordId: this.recordId })
-                    .then(response => {
-                        JSON.parse(JSON.stringify(response)).map(item => {
-                            this.template.querySelector('[data-productfamily="' + item.Name.split('-')[1].trim() + '"]').value = item.Target_to_be_reached__c;
+                if (!this.isCategoryTarget)
+                    getProductFamilyChildGoals({ recordId: this.recordId })
+                        .then(response => {
+                            JSON.parse(JSON.stringify(response)).map(item => {
+                                this.template.querySelector('[data-productfamily="' + item.Name.split('-')[1].trim() + '"]').value = item.Target_to_be_reached__c;
+                            })
                         })
-                    })
 
             })
             .catch(error => {
@@ -329,13 +332,13 @@ export default class TargetBreakup extends LightningElement {
     handleChangeFamily(event) {
         let family = event.target.dataset.productfamily;
         let found = 0;
-
         this.targetsForFamilies = this.targetsForFamilies.map(item => {
+            console.log(item.family);
             if (item.family === family) {
                 found = 1;
                 let obj = {};
                 obj.family = family;
-                obj.target = (parseInt(event.target.value / 100)) * this.target;
+                obj.target = (parseInt(event.target.value) / 100) * this.target;
                 return obj;
             }
             else
@@ -348,6 +351,7 @@ export default class TargetBreakup extends LightningElement {
             new_obj.target = (parseInt(event.target.value) / 100) * this.target;
             this.targetsForFamilies.push(new_obj);
         }
+        console.log(this.targetsForFamilies);
     }
 
     handleAreaTargetChange(event) {
@@ -358,7 +362,7 @@ export default class TargetBreakup extends LightningElement {
                 found = 1;
                 let obj = {};
                 obj.area = area;
-                obj.target = (parseInt(event.target.value / 100)) * this.target;
+                obj.target = (parseInt(event.target.value) / 100) * this.target;
                 return obj;
             }
             else
